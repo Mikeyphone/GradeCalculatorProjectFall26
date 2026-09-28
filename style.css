@@ -1,0 +1,180 @@
+/* Base Reset and Typography */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9fafb;
+    padding: 1rem;
+}
+
+/* CSS Grid for the main layout structure */
+main {
+    display: grid;
+    gap: 2rem;
+    max-width: 800px;
+    margin: 2rem auto;
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+header {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+h1, h2 {
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+/* Form Styling */
+fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+legend {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+
+/* Flexbox for the assignment rows */
+.assignment-row {
+    display: flex;
+    flex-direction: column; /* Stacks label and input vertically on mobile */
+    gap: 0.5rem;
+    padding: 1rem;
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+label {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+input, select {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+/* Button Styling using Flexbox */
+button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #2563eb;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #1d4ed8;
+}
+
+#add-row-btn {
+    background-color: #4b5563;
+}
+
+#add-row-btn:hover {
+    background-color: #374151;
+}
+
+/* Results Panel Styling */
+.results-panel {
+    background-color: #eff6ff;
+    border: 2px dashed #2563eb;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+#results-display {
+    font-size: 1.25rem;
+    margin-top: 0.5rem;
+}
+
+#results-display strong {
+    font-size: 2rem;
+    color: #1d4ed8;
+    display: block;
+}
+
+/* Responsive Desktop Layout */
+@media (min-width: 600px) {
+    /* Switch the flex direction on larger screens to align items in a row */
+    .assignment-row {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    /* Force the Name input to take up more space than the numbers */
+    .assignment-row input[type="text"] {
+        flex: 2;
+    }
+
+    .assignment-row input[type="number"] {
+        flex: 1;
+    }
+    
+    .assignment-row label {
+        margin-right: 0.25rem;
+    }
+
+    button {
+        width: auto;
+    }
+}
+
+/* Remove Button Styling */
+.remove-row-btn {
+    background-color: #ef4444; /* Red color for destructive action */
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.remove-row-btn:hover {
+    background-color: #dc2626;
+}
+
+/* Update Desktop Layout to accommodate the new button */
+@media (min-width: 600px) {
+    .assignment-row {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap; /* Allows the layout to bend if it gets too tight */
+    }
+
+    .remove-row-btn {
+        margin-top: 0;
+        margin-left: auto; /* Pushes the button to the far right */
+        width: auto;
+    }
+}

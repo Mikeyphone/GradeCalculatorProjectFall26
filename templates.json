@@ -1,0 +1,19 @@
+{
+  "tamucc-standard": [
+    { "name": "Exam 1", "weight": 15 },
+    { "name": "Exam 2", "weight": 15 },
+    { "name": "Exam 3", "weight": 15 },
+    { "name": "Exam 4", "weight": 15 },
+    { "name": "Final Exam", "weight": 40 }
+  ],
+  "delmar-project": [
+    { "name": "Weekly Quizzes", "weight": 20 },
+    { "name": "Midterm Project", "weight": 30 },
+    { "name": "Final Project", "weight": 50 }
+  ],
+  "standard-weights": [
+    { "name": "Homework", "weight": 20 },
+    { "name": "Quizzes", "weight": 30 },
+    { "name": "Exams", "weight": 50 }
+  ]
+}
