@@ -25,8 +25,27 @@
                 <option value="tamucc-standard">TAMUCC Standard (4 Exams, 1 Final)</option>
                 <option value="delmar-project">Del Mar Project-Based</option>
                 <option value="standard-weights">Standard (Homework 20%, Quizzes 30%, Exams 50%)</option>
+                <!-- NEW: Custom option added to the list -->
+                <option value="custom">Upload Custom Template...</option>
             </select>
             <button id="load-template-btn">Load Data</button>
+
+            <!-- NEW: Hidden upload section with warning -->
+            <div id="custom-upload-section" style="display: none;">
+                <div class="warning-box">
+                    <strong>⚠️ Format Requirement</strong>
+                    <p>Your file must be a <code>.json</code> file containing a single array of assignments, formatted exactly like this:</p>
+                    <pre><code>
+                    [
+                        { "name": "Lab 1", "weight": 20 },
+                        { "name": "Midterm", "weight": 80 }
+                    ]
+                    </code></pre>
+                </div>
+                
+                <label for="custom-file-upload"><strong>Select your file:</strong></label>
+                <input type="file" id="custom-file-upload" accept=".json">
+            </div>
         </section>
 
         <!-- Main Calculator Application -->
@@ -59,7 +78,6 @@
         <!-- Results Section -->
         <section class="results-panel">
             <h2>Current Standing</h2>
-            <!-- aria-live="polite" tells screen readers to read this text out loud when JS updates it -->
             <div id="results-display" aria-live="polite">
                 <p>Your calculated grade will appear here.</p>
             </div>

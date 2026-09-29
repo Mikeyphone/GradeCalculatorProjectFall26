@@ -114,6 +114,44 @@ function calculateGrade(event) {
     `;
 }
 
+// Grab the new file input element
+const fileInput = document.getElementById('custom-file-upload');
+
+// Listen for when the user selects a file
+fileInput.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    
+    // Stop if no file was selected
+    if (!file) return;
+
+    // Create a new FileReader to read the file's contents
+    const reader = new FileReader();
+
+    // Tell the reader what to do once it finishes loading the file
+    reader.onload = function(e) {
+        try {
+            // Convert the raw text from the file into a JavaScript array/object
+            const customData = JSON.parse(e.target.result);
+
+            // Check if it's an array (which our render function expects)
+            if (Array.isArray(customData)) {
+                renderAssignments(customData);
+                
+                // Optional: reset the file input so they can upload the same file again if needed
+                fileInput.value = ''; 
+            } else {
+                alert("Format error: Your JSON file must contain a single array of assignments.");
+            }
+        } catch (error) {
+            console.error("Error parsing JSON:", error);
+            alert("Invalid JSON file. Please check your formatting.");
+        }
+    };
+
+    // Trigger the reader to read the file as plain text
+    reader.readAsText(file);
+});
+
 // 6. Attach all Event Listeners
 loadBtn.addEventListener('click', loadTemplate);
 addRowBtn.addEventListener('click', addBlankRow);
@@ -123,5 +161,20 @@ assignmentsContainer.addEventListener('click', function(event) {
     if (event.target.classList.contains('remove-row-btn')) {
         // Find the parent row and remove it from the DOM
         event.target.closest('.assignment-row').remove();
+    }
+});
+// Grab the new custom upload section
+const customUploadSection = document.getElementById('custom-upload-section');
+
+// Listen for changes on the dropdown menu
+templateSelect.addEventListener('change', function() {
+    if (templateSelect.value === 'custom') {
+        // Show the upload area and warning, hide the standard Load button
+        customUploadSection.style.display = 'block';
+        loadBtn.style.display = 'none';
+    } else {
+        // Hide the upload area, bring back the standard Load button
+        customUploadSection.style.display = 'none';
+        loadBtn.style.display = 'inline-flex';
     }
 });

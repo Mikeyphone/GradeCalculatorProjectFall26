@@ -178,3 +178,42 @@ button:hover {
         width: auto;
     }
 }
+
+/* Custom Upload & Warning Box Styling */
+#custom-upload-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.warning-box {
+    background-color: #fffbeb; /* Light yellow background */
+    border-left: 4px solid #f59e0b; /* Orange warning accent */
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0 4px 4px 0;
+}
+
+.warning-box strong {
+    color: #92400e;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.warning-box p {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.warning-box pre {
+    background-color: #1f2937; /* Dark background for code */
+    color: #f3f4f6; /* Light text for code */
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    overflow-x: auto; /* Allows scrolling if the code block is too wide on mobile */
+}
+
+.warning-box code {
+    font-family: monospace;
+}
