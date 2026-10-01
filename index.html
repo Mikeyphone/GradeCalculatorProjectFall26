@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Semester Grade Predictor</title>
+    <title>Semester Grade Calculator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <a href="#grade-form" class="skip-link">Skip to calculator</a>
 
     <header>
-        <h1>Semester Grade Predictor</h1>
+        <h1>Semester Grade Calculator</h1>
         <p>Calculate your current standing and project what you need for finals.</p>
     </header>
 
     <main>
+        <div class="clock" id="current-time" aria-live="polite">
+            <span id="time-display">--:--:--</span>
+        </div>
+
         <!-- Accessible in-page notification / error banner -->
         <div id="status-message" class="feedback-banner" role="alert" aria-live="assertive" style="display: none;"></div>
 
@@ -29,12 +33,11 @@
                 <option value="tamucc-standard">TAMUCC Standard (4 Exams, 1 Final)</option>
                 <option value="delmar-project">Del Mar Project-Based</option>
                 <option value="standard-weights">Standard (Homework 20%, Quizzes 30%, Exams 50%)</option>
-                <!-- NEW: Custom option added to the list -->
                 <option value="custom">Upload Custom Template...</option>
             </select>
             <button id="load-template-btn">Load Data</button>
 
-            <!-- NEW: Hidden upload section with warning -->
+            <!-- NEW: Warning section for custom file upload -->
             <div id="custom-upload-section" style="display: none;">
                 <div class="warning-box">
                     <strong><span aria-hidden="true">⚠️ </span>Format Requirement</strong>
@@ -57,7 +60,6 @@
             <h2 id="calc-heading">Your Grades</h2>
             
             <form id="grade-form">
-                <!-- Fieldset groups related form controls for accessibility -->
                 <fieldset id="assignments-container">
                     <legend>Assignment Scores</legend>
                     
@@ -91,10 +93,10 @@
     </main>
 
     <footer>
-        <p>Built with Semantic HTML, CSS, and Vanilla JavaScript</p>
+        <p>Designed and created by Michael Tajchman</p>
+        <p><a href="https://github.com/Mikeyphone/" rel="me" title="My GitHub Profile" aria-label="My GitHub Profile">My GitHub Profile</a></p>
     </footer>
 
-    <!-- Link to the JavaScript logic -->
     <script src="app.js"></script>
 </body>
 </html>

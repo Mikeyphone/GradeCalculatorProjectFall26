@@ -53,7 +53,18 @@ async function loadTemplate() {
     }
 }
 
-// 3. Function to build and inject the HTML rows
+// Helper function to sanitize strings and prevent XSS
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// 3. Function to build and inject the HTML rows safely
 function renderAssignments(assignments) {
     assignmentsContainer.innerHTML = '<legend>Assignment Scores</legend>';
 
@@ -62,12 +73,16 @@ function renderAssignments(assignments) {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'assignment-row';
 
+        // Sanitize strings and enforce numbers
+        const safeName = escapeHTML(assignment.name);
+        const safeWeight = parseFloat(assignment.weight) || 0; 
+
         rowDiv.innerHTML = `
             <label for="assign-name-${rowNum}">Name</label>
-            <input type="text" id="assign-name-${rowNum}" name="assign-name-${rowNum}" value="${assignment.name}">
+            <input type="text" id="assign-name-${rowNum}" name="assign-name-${rowNum}" value="${safeName}">
             
             <label for="assign-weight-${rowNum}">Weight (%)</label>
-            <input type="number" id="assign-weight-${rowNum}" name="assign-weight-${rowNum}" value="${assignment.weight}" min="0" max="100" step="any" inputmode="decimal">
+            <input type="number" id="assign-weight-${rowNum}" name="assign-weight-${rowNum}" value="${safeWeight}" min="0" max="100" step="any" inputmode="decimal">
             
             <label for="assign-score-${rowNum}">Score</label>
             <input type="number" id="assign-score-${rowNum}" name="assign-score-${rowNum}" min="0" step="any" inputmode="decimal">
@@ -115,7 +130,8 @@ function calculateGrade(event) {
 
     const rows = document.querySelectorAll('.assignment-row');
     let totalEarnedPoints = 0;
-    let totalWeightEntered = 0;
+    let totalWeightCompleted = 0;
+    let totalSyllabusWeight = 0; 
 
     rows.forEach(row => {
         const weightInput = row.querySelector('input[name^="assign-weight"]');
@@ -124,22 +140,33 @@ function calculateGrade(event) {
         const weight = parseFloat(weightInput.value);
         const score = parseFloat(scoreInput.value);
 
-        if (!isNaN(weight) && !isNaN(score)) {
-            totalEarnedPoints += (score * (weight / 100));
-            totalWeightEntered += weight;
+        // Tally all entered weights to check for syllabus typos
+        if (!isNaN(weight)) {
+            totalSyllabusWeight += weight;
+            
+            // Only calculate points if a score is actually entered
+            if (!isNaN(score)) {
+                totalEarnedPoints += (score * (weight / 100));
+                totalWeightCompleted += weight;
+            }
         }
     });
 
-    if (totalWeightEntered === 0) {
+    // Trigger the existing error banner if weights exceed 100%
+    if (totalSyllabusWeight > 100) {
+        showFeedback(`Warning: Total syllabus weight is currently ${totalSyllabusWeight}%. It should not exceed 100%.`, 'error');
+    }
+
+    if (totalWeightCompleted === 0) {
         resultsDisplay.innerHTML = '<p>Please enter at least one score and weight to calculate your grade.</p>';
         return;
     }
 
-    const currentGrade = (totalEarnedPoints / (totalWeightEntered / 100)).toFixed(2);
+    const currentGrade = (totalEarnedPoints / (totalWeightCompleted / 100)).toFixed(2);
     
     resultsDisplay.innerHTML = `
         <p><strong>Current Grade:</strong> ${currentGrade}%</p>
-        <p><em>Based on ${totalWeightEntered}% of your total course weight completed.</em></p>
+        <p><em>Based on ${totalWeightCompleted}% of your total course weight completed.</em></p>
     `;
 }
 
@@ -216,3 +243,16 @@ templateSelect.addEventListener('change', function() {
         loadBtn.style.display = 'inline-flex';
     }
 });
+
+// 7. Display current date and time in the header
+function updateDateTime() {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const formattedDateTime = now.toLocaleDateString(undefined, options);
+    const dateTimeElement = document.getElementById('current-time');
+    dateTimeElement.textContent = formattedDateTime;
+}
+
+// Update the date and time every second
+setInterval(updateDateTime, 1000);
+updateDateTime(); // Initial call
