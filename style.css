@@ -5,6 +5,48 @@
     padding: 0;
 }
 
+/* Accessibility: Skip Link */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    background: #2563eb;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 4px;
+    z-index: 1000;
+    text-decoration: none;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus-visible {
+    top: 1rem;
+    outline: 3px solid #111827;
+    outline-offset: 2px;
+}
+
+/* Accessibility: Screen Reader Only utility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Accessibility: Global visible focus indicators */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 2px;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.6;
@@ -154,14 +196,21 @@ button:hover {
 
 /* Remove Button Styling */
 .remove-row-btn {
-    background-color: #ef4444; /* Red color for destructive action */
+    background-color: #b91c1c; /* Solid high-contrast red (WCAG AA compliant: 5.7:1 with white text) */
+    color: #ffffff;
     margin-top: 0.5rem;
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
+    min-height: 44px; /* Accessible minimum target size */
 }
 
 .remove-row-btn:hover {
-    background-color: #dc2626;
+    background-color: #991b1b;
+}
+
+.remove-row-btn:focus-visible {
+    outline: 3px solid #991b1b;
+    outline-offset: 2px;
 }
 
 /* Update Desktop Layout to accommodate the new button */
@@ -216,4 +265,37 @@ button:hover {
 
 .warning-box code {
     font-family: monospace;
+}
+
+/* Accessible In-Page Status / Feedback Banner */
+.feedback-banner {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    border-left: 4px solid;
+}
+
+.feedback-banner.error {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-color: #dc2626;
+}
+
+.feedback-banner.success {
+    background-color: #f0fdf4;
+    color: #166534;
+    border-color: #16a34a;
+}
+
+/* Accessibility: Honor user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

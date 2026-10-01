@@ -5,13 +5,31 @@ const assignmentsContainer = document.getElementById('assignments-container');
 const gradeForm = document.getElementById('grade-form');
 const resultsDisplay = document.getElementById('results-display');
 const addRowBtn = document.getElementById('add-row-btn');
+const fileInput = document.getElementById('custom-file-upload');
+const customUploadSection = document.getElementById('custom-upload-section');
+const statusMessage = document.getElementById('status-message');
+
+// Visual Feedback helpers (displays in-page message banner instead of native alert)
+function showFeedback(message, type = 'error') {
+    if (!statusMessage) return;
+    statusMessage.textContent = message;
+    statusMessage.className = `feedback-banner ${type}`;
+    statusMessage.style.display = 'block';
+}
+
+function clearFeedback() {
+    if (!statusMessage) return;
+    statusMessage.style.display = 'none';
+    statusMessage.textContent = '';
+}
 
 // 2. The main Async function to fetch data
 async function loadTemplate() {
+    clearFeedback();
     const selectedTemplate = templateSelect.value;
 
     if (!selectedTemplate) {
-        alert("Please select a syllabus template first.");
+        showFeedback("Please select a syllabus template first.", "error");
         return;
     }
 
@@ -26,10 +44,12 @@ async function loadTemplate() {
 
         if (templateData) {
             renderAssignments(templateData);
+            const templateName = templateSelect.options[templateSelect.selectedIndex].text;
+            showFeedback(`Loaded ${templateData.length} assignments from "${templateName}".`, "success");
         }
     } catch (error) {
         console.error("Error loading the JSON data:", error);
-        alert("Could not load templates. Make sure you are using a local web server (like VS Code Live Server).");
+        showFeedback("Could not load templates. Make sure you are using a local web server (like VS Code Live Server).", "error");
     }
 }
 
@@ -47,20 +67,23 @@ function renderAssignments(assignments) {
             <input type="text" id="assign-name-${rowNum}" name="assign-name-${rowNum}" value="${assignment.name}">
             
             <label for="assign-weight-${rowNum}">Weight (%)</label>
-            <input type="number" id="assign-weight-${rowNum}" name="assign-weight-${rowNum}" value="${assignment.weight}" min="0" max="100">
+            <input type="number" id="assign-weight-${rowNum}" name="assign-weight-${rowNum}" value="${assignment.weight}" min="0" max="100" step="any" inputmode="decimal">
             
             <label for="assign-score-${rowNum}">Score</label>
-            <input type="number" id="assign-score-${rowNum}" name="assign-score-${rowNum}" min="0">
+            <input type="number" id="assign-score-${rowNum}" name="assign-score-${rowNum}" min="0" step="any" inputmode="decimal">
             
-            <button type="button" class="remove-row-btn" aria-label="Remove ${assignment.name}">Remove</button>
+            <button type="button" class="remove-row-btn" aria-label="Remove Assignment ${rowNum}">Remove</button>
         `;
         assignmentsContainer.appendChild(rowDiv);
     });
 }
 
 function addBlankRow() {
-    // We use Date.now() here to guarantee a unique ID even if rows were deleted
+    clearFeedback();
     const uniqueId = Date.now(); 
+    const currentRows = assignmentsContainer.querySelectorAll('.assignment-row');
+    const rowNum = currentRows.length + 1;
+
     const rowDiv = document.createElement('div');
     rowDiv.className = 'assignment-row';
 
@@ -69,20 +92,26 @@ function addBlankRow() {
         <input type="text" id="assign-name-${uniqueId}" name="assign-name-${uniqueId}" placeholder="New Assignment">
         
         <label for="assign-weight-${uniqueId}">Weight (%)</label>
-        <input type="number" id="assign-weight-${uniqueId}" name="assign-weight-${uniqueId}" min="0" max="100">
+        <input type="number" id="assign-weight-${uniqueId}" name="assign-weight-${uniqueId}" min="0" max="100" step="any" inputmode="decimal">
         
         <label for="assign-score-${uniqueId}">Score</label>
-        <input type="number" id="assign-score-${uniqueId}" name="assign-score-${uniqueId}" min="0">
+        <input type="number" id="assign-score-${uniqueId}" name="assign-score-${uniqueId}" min="0" step="any" inputmode="decimal">
         
-        <button type="button" class="remove-row-btn" aria-label="Remove assignment">Remove</button>
+        <button type="button" class="remove-row-btn" aria-label="Remove Assignment ${rowNum}">Remove</button>
     `;
     assignmentsContainer.appendChild(rowDiv);
+
+    // Visually shift focus to the newly added row
+    const nameInput = rowDiv.querySelector('input[type="text"]');
+    if (nameInput) {
+        nameInput.focus();
+    }
 }
 
 // 5. Function to calculate the final grade
 function calculateGrade(event) {
-    // This exact line is what stops the page from refreshing
     event.preventDefault();
+    clearFeedback();
 
     const rows = document.querySelectorAll('.assignment-row');
     let totalEarnedPoints = 0;
@@ -114,41 +143,32 @@ function calculateGrade(event) {
     `;
 }
 
-// Grab the new file input element
-const fileInput = document.getElementById('custom-file-upload');
-
 // Listen for when the user selects a file
 fileInput.addEventListener('change', function(event) {
+    clearFeedback();
     const file = event.target.files[0];
     
-    // Stop if no file was selected
     if (!file) return;
 
-    // Create a new FileReader to read the file's contents
     const reader = new FileReader();
 
-    // Tell the reader what to do once it finishes loading the file
     reader.onload = function(e) {
         try {
-            // Convert the raw text from the file into a JavaScript array/object
             const customData = JSON.parse(e.target.result);
 
-            // Check if it's an array (which our render function expects)
             if (Array.isArray(customData)) {
                 renderAssignments(customData);
-                
-                // Optional: reset the file input so they can upload the same file again if needed
+                showFeedback(`Custom syllabus uploaded: ${customData.length} assignments loaded.`, "success");
                 fileInput.value = ''; 
             } else {
-                alert("Format error: Your JSON file must contain a single array of assignments.");
+                showFeedback("Format error: Your JSON file must contain a single array of assignments.", "error");
             }
         } catch (error) {
             console.error("Error parsing JSON:", error);
-            alert("Invalid JSON file. Please check your formatting.");
+            showFeedback("Invalid JSON file. Please check your formatting.", "error");
         }
     };
 
-    // Trigger the reader to read the file as plain text
     reader.readAsText(file);
 });
 
@@ -156,24 +176,42 @@ fileInput.addEventListener('change', function(event) {
 loadBtn.addEventListener('click', loadTemplate);
 addRowBtn.addEventListener('click', addBlankRow);
 gradeForm.addEventListener('submit', calculateGrade);
+
+// Row removal with visual focus preservation
 assignmentsContainer.addEventListener('click', function(event) {
-    // Check if the thing clicked was a remove button
     if (event.target.classList.contains('remove-row-btn')) {
-        // Find the parent row and remove it from the DOM
-        event.target.closest('.assignment-row').remove();
+        const row = event.target.closest('.assignment-row');
+        if (!row) return;
+
+        // Preserve focus location so the user does not get lost
+        const prevRow = row.previousElementSibling && row.previousElementSibling.classList.contains('assignment-row') ? row.previousElementSibling : null;
+        const nextRow = row.nextElementSibling && row.nextElementSibling.classList.contains('assignment-row') ? row.nextElementSibling : null;
+
+        let targetToFocus = null;
+        if (nextRow) {
+            targetToFocus = nextRow.querySelector('input');
+        } else if (prevRow) {
+            targetToFocus = prevRow.querySelector('input');
+        } else {
+            targetToFocus = addRowBtn;
+        }
+
+        row.remove();
+
+        if (targetToFocus) {
+            targetToFocus.focus();
+        }
     }
 });
-// Grab the new custom upload section
-const customUploadSection = document.getElementById('custom-upload-section');
 
 // Listen for changes on the dropdown menu
 templateSelect.addEventListener('change', function() {
+    clearFeedback();
     if (templateSelect.value === 'custom') {
-        // Show the upload area and warning, hide the standard Load button
         customUploadSection.style.display = 'block';
         loadBtn.style.display = 'none';
+        fileInput.focus();
     } else {
-        // Hide the upload area, bring back the standard Load button
         customUploadSection.style.display = 'none';
         loadBtn.style.display = 'inline-flex';
     }

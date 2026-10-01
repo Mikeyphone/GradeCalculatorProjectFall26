@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <a href="#grade-form" class="skip-link">Skip to calculator</a>
 
     <header>
         <h1>Semester Grade Predictor</h1>
@@ -14,6 +15,9 @@
     </header>
 
     <main>
+        <!-- Accessible in-page notification / error banner -->
+        <div id="status-message" class="feedback-banner" role="alert" aria-live="assertive" style="display: none;"></div>
+
         <!-- Async Feature: Loading preset syllabus structures -->
         <section class="template-loader" aria-labelledby="loader-heading">
             <h2 id="loader-heading">Load Course Template</h2>
@@ -33,7 +37,7 @@
             <!-- NEW: Hidden upload section with warning -->
             <div id="custom-upload-section" style="display: none;">
                 <div class="warning-box">
-                    <strong>⚠️ Format Requirement</strong>
+                    <strong><span aria-hidden="true">⚠️ </span>Format Requirement</strong>
                     <p>Your file must be a <code>.json</code> file containing a single array of assignments, formatted exactly like this:</p>
                     <pre><code>
                     [
@@ -58,15 +62,17 @@
                     <legend>Assignment Scores</legend>
                     
                     <!-- Individual assignment row (JavaScript will add more of these dynamically) -->
-                    <div class="assignment-row">
+                    <div class="assignment-row" role="group" aria-label="Assignment 1">
                         <label for="assign-name-1">Name</label>
                         <input type="text" id="assign-name-1" name="assign-name-1" placeholder="e.g., Midterm">
                         
                         <label for="assign-weight-1">Weight (%)</label>
-                        <input type="number" id="assign-weight-1" name="assign-weight-1" min="0" max="100">
+                        <input type="number" id="assign-weight-1" name="assign-weight-1" min="0" max="100" step="any" inputmode="decimal">
                         
                         <label for="assign-score-1">Score</label>
-                        <input type="number" id="assign-score-1" name="assign-score-1" min="0">
+                        <input type="number" id="assign-score-1" name="assign-score-1" min="0" step="any" inputmode="decimal">
+
+                        <button type="button" class="remove-row-btn" aria-label="Remove Assignment 1">Remove</button>
                     </div>
                 </fieldset>
 
@@ -76,8 +82,8 @@
         </section>
 
         <!-- Results Section -->
-        <section class="results-panel">
-            <h2>Current Standing</h2>
+        <section class="results-panel" aria-labelledby="results-heading">
+            <h2 id="results-heading">Current Standing</h2>
             <div id="results-display" aria-live="polite">
                 <p>Your calculated grade will appear here.</p>
             </div>
