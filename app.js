@@ -1,15 +1,8 @@
-// 1. Grab all necessary elements from the DOM
-const templateSelect = document.getElementById('course-template');
-const loadBtn = document.getElementById('load-template-btn');
-const assignmentsContainer = document.getElementById('assignments-container');
-const gradeForm = document.getElementById('grade-form');
-const resultsDisplay = document.getElementById('results-display');
-const addRowBtn = document.getElementById('add-row-btn');
-const fileInput = document.getElementById('custom-file-upload');
-const customUploadSection = document.getElementById('custom-upload-section');
+// ==========================================
+// 1. UTILITIES & VISUAL FEEDBACK
+// ==========================================
 const statusMessage = document.getElementById('status-message');
 
-// Visual Feedback helpers (displays in-page message banner instead of native alert)
 function showFeedback(message, type = 'error') {
     if (!statusMessage) return;
     statusMessage.textContent = message;
@@ -23,7 +16,115 @@ function clearFeedback() {
     statusMessage.textContent = '';
 }
 
-// 2. The main Async function to fetch data
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// ==========================================
+// 2. CLOCK / TIME DISPLAY
+// ==========================================
+const dateTimeElement = document.getElementById('time-display');
+
+function updateDateTime() {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    if (dateTimeElement) {
+        dateTimeElement.textContent = now.toLocaleDateString(undefined, options);
+    }
+}
+setInterval(updateDateTime, 1000);
+updateDateTime(); // Initial call
+
+// ==========================================
+// 3. UI ROW MANAGEMENT (Render, Add, Remove)
+// ==========================================
+const assignmentsContainer = document.getElementById('assignments-container');
+const addRowBtn = document.getElementById('add-row-btn');
+
+function renderAssignments(assignments) {
+    assignmentsContainer.innerHTML = '<legend>Assignment Scores</legend>';
+
+    assignments.forEach((assignment, index) => {
+        const rowNum = index + 1;
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'assignment-row';
+
+        const safeName = escapeHTML(assignment.name);
+        const safeWeight = parseFloat(assignment.weight) || 0; 
+
+        rowDiv.innerHTML = `
+            <label for="assign-name-${rowNum}">Name</label>
+            <input type="text" id="assign-name-${rowNum}" name="assign-name-${rowNum}" value="${safeName}" required>
+            
+            <label for="assign-weight-${rowNum}">Weight (%)</label>
+            <input type="number" id="assign-weight-${rowNum}" name="assign-weight-${rowNum}" value="${safeWeight}" min="0" max="100" step="any" inputmode="decimal" required>
+            
+            <label for="assign-score-${rowNum}">Score</label>
+            <input type="number" id="assign-score-${rowNum}" name="assign-score-${rowNum}" min="0" step="any" inputmode="decimal">
+            
+            <button type="button" class="remove-row-btn">Remove</button>
+        `;
+        assignmentsContainer.appendChild(rowDiv);
+    });
+}
+
+function addBlankRow() {
+    clearFeedback();
+    const uniqueId = Date.now(); 
+    
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'assignment-row';
+
+    rowDiv.innerHTML = `
+        <label for="assign-name-${uniqueId}">Name</label>
+        <input type="text" id="assign-name-${uniqueId}" name="assign-name-${uniqueId}" placeholder="New Assignment" required>
+        
+        <label for="assign-weight-${uniqueId}">Weight (%)</label>
+        <input type="number" id="assign-weight-${uniqueId}" name="assign-weight-${uniqueId}" min="0" max="100" step="any" inputmode="decimal" required>
+        
+        <label for="assign-score-${uniqueId}">Score</label>
+        <input type="number" id="assign-score-${uniqueId}" name="assign-score-${uniqueId}" min="0" step="any" inputmode="decimal">
+        
+        <button type="button" class="remove-row-btn">Remove</button>
+    `;
+    assignmentsContainer.appendChild(rowDiv);
+
+    const nameInput = rowDiv.querySelector('input[type="text"]');
+    if (nameInput) nameInput.focus();
+}
+
+addRowBtn.addEventListener('click', addBlankRow);
+
+// Row removal with visual focus preservation
+assignmentsContainer.addEventListener('click', function(event) {
+    if (event.target.classList.contains('remove-row-btn')) {
+        const row = event.target.closest('.assignment-row');
+        if (!row) return;
+
+        const prevRow = row.previousElementSibling && row.previousElementSibling.classList.contains('assignment-row') ? row.previousElementSibling : null;
+        const nextRow = row.nextElementSibling && row.nextElementSibling.classList.contains('assignment-row') ? row.nextElementSibling : null;
+
+        let targetToFocus = nextRow ? nextRow.querySelector('input') : (prevRow ? prevRow.querySelector('input') : addRowBtn);
+
+        row.remove();
+        if (targetToFocus) targetToFocus.focus();
+    }
+});
+
+// ==========================================
+// 4. DATA LOADING (Templates & Custom Upload)
+// ==========================================
+const templateSelect = document.getElementById('course-template');
+const loadBtn = document.getElementById('load-template-btn');
+const fileInput = document.getElementById('custom-file-upload');
+const customUploadSection = document.getElementById('custom-upload-section');
+
 async function loadTemplate() {
     clearFeedback();
     const selectedTemplate = templateSelect.value;
@@ -33,11 +134,15 @@ async function loadTemplate() {
         return;
     }
 
+    const existingRows = document.querySelectorAll('.assignment-row');
+    if (existingRows.length > 0) {
+        const confirmOverwrite = confirm("Loading a template will overwrite your current entries. Do you wish to continue?");
+        if (!confirmOverwrite) return;
+    }
+
     try {
         const response = await fetch('templates.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const data = await response.json();
         const templateData = data[selectedTemplate];
@@ -49,83 +154,65 @@ async function loadTemplate() {
         }
     } catch (error) {
         console.error("Error loading the JSON data:", error);
-        showFeedback("Could not load templates. Make sure you are using a local web server (like VS Code Live Server).", "error");
+        showFeedback("Could not load templates. Make sure you are using a local web server.", "error");
     }
 }
 
-// Helper function to sanitize strings and prevent XSS
-function escapeHTML(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
+loadBtn.addEventListener('click', loadTemplate);
 
-// 3. Function to build and inject the HTML rows safely
-function renderAssignments(assignments) {
-    assignmentsContainer.innerHTML = '<legend>Assignment Scores</legend>';
-
-    assignments.forEach((assignment, index) => {
-        const rowNum = index + 1;
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'assignment-row';
-
-        // Sanitize strings and enforce numbers
-        const safeName = escapeHTML(assignment.name);
-        const safeWeight = parseFloat(assignment.weight) || 0; 
-
-        rowDiv.innerHTML = `
-            <label for="assign-name-${rowNum}">Name</label>
-            <input type="text" id="assign-name-${rowNum}" name="assign-name-${rowNum}" value="${safeName}">
-            
-            <label for="assign-weight-${rowNum}">Weight (%)</label>
-            <input type="number" id="assign-weight-${rowNum}" name="assign-weight-${rowNum}" value="${safeWeight}" min="0" max="100" step="any" inputmode="decimal">
-            
-            <label for="assign-score-${rowNum}">Score</label>
-            <input type="number" id="assign-score-${rowNum}" name="assign-score-${rowNum}" min="0" step="any" inputmode="decimal">
-            
-            <button type="button" class="remove-row-btn" aria-label="Remove Assignment ${rowNum}">Remove</button>
-        `;
-        assignmentsContainer.appendChild(rowDiv);
-    });
-}
-
-function addBlankRow() {
+templateSelect.addEventListener('change', function() {
     clearFeedback();
-    const uniqueId = Date.now(); 
-    const currentRows = assignmentsContainer.querySelectorAll('.assignment-row');
-    const rowNum = currentRows.length + 1;
-
-    const rowDiv = document.createElement('div');
-    rowDiv.className = 'assignment-row';
-
-    rowDiv.innerHTML = `
-        <label for="assign-name-${uniqueId}">Name</label>
-        <input type="text" id="assign-name-${uniqueId}" name="assign-name-${uniqueId}" placeholder="New Assignment">
-        
-        <label for="assign-weight-${uniqueId}">Weight (%)</label>
-        <input type="number" id="assign-weight-${uniqueId}" name="assign-weight-${uniqueId}" min="0" max="100" step="any" inputmode="decimal">
-        
-        <label for="assign-score-${uniqueId}">Score</label>
-        <input type="number" id="assign-score-${uniqueId}" name="assign-score-${uniqueId}" min="0" step="any" inputmode="decimal">
-        
-        <button type="button" class="remove-row-btn" aria-label="Remove Assignment ${rowNum}">Remove</button>
-    `;
-    assignmentsContainer.appendChild(rowDiv);
-
-    // Visually shift focus to the newly added row
-    const nameInput = rowDiv.querySelector('input[type="text"]');
-    if (nameInput) {
-        nameInput.focus();
+    if (templateSelect.value === 'custom') {
+        customUploadSection.style.display = 'block';
+        loadBtn.style.display = 'none';
+        fileInput.focus();
+    } else {
+        customUploadSection.style.display = 'none';
+        loadBtn.style.display = 'inline-flex';
     }
-}
+});
 
-// 5. Function to calculate the final grade
+fileInput.addEventListener('change', function(event) {
+    clearFeedback();
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const existingRows = document.querySelectorAll('.assignment-row');
+    if (existingRows.length > 0) {
+        const confirmOverwrite = confirm("Uploading a template will overwrite your current entries. Continue?");
+        if (!confirmOverwrite) {
+            fileInput.value = ''; // Reset file input if they cancel
+            return;
+        }
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const customData = JSON.parse(e.target.result);
+            if (Array.isArray(customData)) {
+                renderAssignments(customData);
+                showFeedback(`Custom syllabus uploaded: ${customData.length} assignments loaded.`, "success");
+                fileInput.value = ''; 
+            } else {
+                showFeedback("Format error: Your JSON file must contain a single array of assignments.", "error");
+            }
+        } catch (error) {
+            console.error("Error parsing JSON:", error);
+            showFeedback("Invalid JSON file. Please check your formatting.", "error");
+        }
+    };
+    reader.readAsText(file);
+});
+
+// ==========================================
+// 5. CALCULATIONS
+// ==========================================
+const gradeForm = document.getElementById('grade-form');
+const resultsDisplay = document.getElementById('results-display');
+
 function calculateGrade(event) {
-    event.preventDefault();
+    event.preventDefault(); // Native form validation now runs before this is ever called
     clearFeedback();
 
     const rows = document.querySelectorAll('.assignment-row');
@@ -140,11 +227,8 @@ function calculateGrade(event) {
         const weight = parseFloat(weightInput.value);
         const score = parseFloat(scoreInput.value);
 
-        // Tally all entered weights to check for syllabus typos
         if (!isNaN(weight)) {
             totalSyllabusWeight += weight;
-            
-            // Only calculate points if a score is actually entered
             if (!isNaN(score)) {
                 totalEarnedPoints += (score * (weight / 100));
                 totalWeightCompleted += weight;
@@ -152,7 +236,6 @@ function calculateGrade(event) {
         }
     });
 
-    // Trigger the existing error banner if weights exceed 100%
     if (totalSyllabusWeight > 100) {
         showFeedback(`Warning: Total syllabus weight is currently ${totalSyllabusWeight}%. It should not exceed 100%.`, 'error');
     }
@@ -170,89 +253,4 @@ function calculateGrade(event) {
     `;
 }
 
-// Listen for when the user selects a file
-fileInput.addEventListener('change', function(event) {
-    clearFeedback();
-    const file = event.target.files[0];
-    
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
-        try {
-            const customData = JSON.parse(e.target.result);
-
-            if (Array.isArray(customData)) {
-                renderAssignments(customData);
-                showFeedback(`Custom syllabus uploaded: ${customData.length} assignments loaded.`, "success");
-                fileInput.value = ''; 
-            } else {
-                showFeedback("Format error: Your JSON file must contain a single array of assignments.", "error");
-            }
-        } catch (error) {
-            console.error("Error parsing JSON:", error);
-            showFeedback("Invalid JSON file. Please check your formatting.", "error");
-        }
-    };
-
-    reader.readAsText(file);
-});
-
-// 6. Attach all Event Listeners
-loadBtn.addEventListener('click', loadTemplate);
-addRowBtn.addEventListener('click', addBlankRow);
 gradeForm.addEventListener('submit', calculateGrade);
-
-// Row removal with visual focus preservation
-assignmentsContainer.addEventListener('click', function(event) {
-    if (event.target.classList.contains('remove-row-btn')) {
-        const row = event.target.closest('.assignment-row');
-        if (!row) return;
-
-        // Preserve focus location so the user does not get lost
-        const prevRow = row.previousElementSibling && row.previousElementSibling.classList.contains('assignment-row') ? row.previousElementSibling : null;
-        const nextRow = row.nextElementSibling && row.nextElementSibling.classList.contains('assignment-row') ? row.nextElementSibling : null;
-
-        let targetToFocus = null;
-        if (nextRow) {
-            targetToFocus = nextRow.querySelector('input');
-        } else if (prevRow) {
-            targetToFocus = prevRow.querySelector('input');
-        } else {
-            targetToFocus = addRowBtn;
-        }
-
-        row.remove();
-
-        if (targetToFocus) {
-            targetToFocus.focus();
-        }
-    }
-});
-
-// Listen for changes on the dropdown menu
-templateSelect.addEventListener('change', function() {
-    clearFeedback();
-    if (templateSelect.value === 'custom') {
-        customUploadSection.style.display = 'block';
-        loadBtn.style.display = 'none';
-        fileInput.focus();
-    } else {
-        customUploadSection.style.display = 'none';
-        loadBtn.style.display = 'inline-flex';
-    }
-});
-
-// 7. Display current date and time in the header
-function updateDateTime() {
-    const now = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-    const formattedDateTime = now.toLocaleDateString(undefined, options);
-    const dateTimeElement = document.getElementById('current-time');
-    dateTimeElement.textContent = formattedDateTime;
-}
-
-// Update the date and time every second
-setInterval(updateDateTime, 1000);
-updateDateTime(); // Initial call

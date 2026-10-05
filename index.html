@@ -3,27 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Semester Grade Calculator</title>
+    <title>Grader 4 You</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <a href="#grade-form" class="skip-link">Skip to calculator</a>
-
     <header>
-        <h1>Semester Grade Calculator</h1>
+        <h1>Grader 4 You</h1>
         <p>Calculate your current standing and project what you need for finals.</p>
     </header>
 
     <main>
-        <div class="clock" id="current-time" aria-live="polite">
+        <div class="clock" id="current-time">
             <span id="time-display">--:--:--</span>
         </div>
 
-        <!-- Accessible in-page notification / error banner -->
-        <div id="status-message" class="feedback-banner" role="alert" aria-live="assertive" style="display: none;"></div>
+        <!-- In-page notification / error banner -->
+        <div id="status-message" class="feedback-banner" style="display: none;"></div>
 
         <!-- Async Feature: Loading preset syllabus structures -->
-        <section class="template-loader" aria-labelledby="loader-heading">
+        <section class="template-loader">
             <h2 id="loader-heading">Load Course Template</h2>
             <p>Select a preset syllabus weight structure to auto-fill the categories.</p>
             
@@ -37,10 +35,10 @@
             </select>
             <button id="load-template-btn">Load Data</button>
 
-            <!-- NEW: Warning section for custom file upload -->
+            <!-- Warning section for custom file upload -->
             <div id="custom-upload-section" style="display: none;">
                 <div class="warning-box">
-                    <strong><span aria-hidden="true">⚠️ </span>Format Requirement</strong>
+                    <strong><span>⚠️️ </span>Format Requirement</strong>
                     <p>Your file must be a <code>.json</code> file containing a single array of assignments, formatted exactly like this:</p>
                     <pre><code>
                     [
@@ -56,7 +54,7 @@
         </section>
 
         <!-- Main Calculator Application -->
-        <section class="calculator-app" aria-labelledby="calc-heading">
+        <section class="calculator-app">
             <h2 id="calc-heading">Your Grades</h2>
             
             <form id="grade-form">
@@ -64,7 +62,7 @@
                     <legend>Assignment Scores</legend>
                     
                     <!-- Individual assignment row (JavaScript will add more of these dynamically) -->
-                    <div class="assignment-row" role="group" aria-label="Assignment 1">
+                    <div class="assignment-row">
                         <label for="assign-name-1">Name</label>
                         <input type="text" id="assign-name-1" name="assign-name-1" placeholder="e.g., Midterm">
                         
@@ -74,7 +72,7 @@
                         <label for="assign-score-1">Score</label>
                         <input type="number" id="assign-score-1" name="assign-score-1" min="0" step="any" inputmode="decimal">
 
-                        <button type="button" class="remove-row-btn" aria-label="Remove Assignment 1">Remove</button>
+                        <button type="button" class="remove-row-btn">Remove</button>
                     </div>
                 </fieldset>
 
@@ -84,9 +82,9 @@
         </section>
 
         <!-- Results Section -->
-        <section class="results-panel" aria-labelledby="results-heading">
+        <section class="results-panel">
             <h2 id="results-heading">Current Standing</h2>
-            <div id="results-display" aria-live="polite">
+            <div id="results-display">
                 <p>Your calculated grade will appear here.</p>
             </div>
         </section>
@@ -94,9 +92,10 @@
 
     <footer>
         <p>Designed and created by Michael Tajchman</p>
-        <p><a href="https://github.com/Mikeyphone/" rel="me" title="My GitHub Profile" aria-label="My GitHub Profile">My GitHub Profile</a></p>
+        <p><a href="https://github.com/Mikeyphone/" rel="me" title="My GitHub Profile">My GitHub Profile</a></p>
     </footer>
 
     <script src="app.js"></script>
+    <!-- <script src="tests.js"></script> --> <!-- Uncomment this line to run tests in the browser --> 
 </body>
 </html>
