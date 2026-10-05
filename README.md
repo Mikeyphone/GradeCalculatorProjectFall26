@@ -22,4 +22,8 @@ Click the file input button and select a valid .json file from your computer. Th
 CALCULATING YOUR STANDING
 Once your data is entered, click the "Calculate Grade" button at the bottom of the form.
 The application intelligently calculates your current standing based only on the assignments that have a score entered. This means your calculated grade reflects exactly where you stand right now, without future blank assignments dragging your average down.
-If the total sum of your entered weights exceeds 100%, an error banner will appear at the top of the screen to warn you of the typo.   
+If the total sum of your entered weights exceeds 100%, an error banner will appear at the top of the screen to warn you of the typo.
+
+--- AI DISCLOSURE ---
+During the project I utalized Google's Gemini to help me organize my code along with
+fixing any errors I came accross. I also used Gemini to help me format the README file.
